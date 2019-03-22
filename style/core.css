@@ -1,0 +1,8 @@
+.editor-pane {
+    width: 100vw;
+    height: 100vh;
+    border-top: #000000 solid 1px;
+    /*border-radius: 10px;*/
+    /*margin: 2px;*/
+    /*padding: 2px;*/
+}

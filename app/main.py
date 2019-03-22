@@ -27,5 +27,8 @@ def newNote():
     location = "".join([random.choice(string.ascii_lowercase) for x in range(7)])
     return redirect(url_for("edit", note=location))
 
+@app.route("/saveNote/<note>")
+def saveNote(note):
+    pass
 
 app.run(host="0.0.0.0", port=8080)
