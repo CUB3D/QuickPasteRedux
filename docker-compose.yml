@@ -7,4 +7,4 @@ services:
     volumes:
       - .:/home/code/
     environment:
-      - ENV=/home/code/.env-${TAG}
+      - ENV=.env-${TAG}

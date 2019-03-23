@@ -1,4 +1,8 @@
-flask
-
 starlette
-uvicorn
+hypercorn
+jinja2
+aiofiles
+databases
+databases[mysql]
+aiosqlite
+alembic

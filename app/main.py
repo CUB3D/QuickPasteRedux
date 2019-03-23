@@ -1,36 +1,82 @@
-from flask import Flask, render_template, redirect, Response, url_for
+from starlette.applications import Starlette
+from starlette.responses import HTMLResponse, FileResponse, RedirectResponse
+from starlette.config import Config
+from starlette.templating import Jinja2Templates
 import os
 import string
 import random
+import uuid
+from databases import Database
 
-app = Flask(__name__, template_folder="../templates")
-app.config.from_envvar("ENV")
+config = Config(os.environ["ENV"])
+DEBUG = config("DEBUG", cast=bool, default=False)
+DB_URL = config("DATABASE_URL")
+
+app = Starlette(debug=DEBUG)
+templates = Jinja2Templates("templates")
+
+database = Database(DB_URL)
+
+import sqlalchemy
+
+metadata = sqlalchemy.MetaData()
+
+note = sqlalchemy.Table(
+    "notes",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("file_name", sqlalchemy.String(length=255)),
+    sqlalchemy.Column("note_id", sqlalchemy.String(length=255))
+)
+
+
+@app.on_event("startup")
+async def startup():
+    await database.connect()
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
+
 
 @app.route("/")
-def root():
-    return render_template("main.html")
+async def root(req):
+    return templates.TemplateResponse("main.html", {"request": req})
 
 
-@app.route("/resource/<file>")
-def resource(file):
-    f = open(os.path.join("/home/code/style/", file))
-    return Response(f.read(), mimetype="text/css")
+@app.route("/resource/{file}")
+async def resource(req):
+    return FileResponse(os.path.join("/home/code/style/", req.path_params["file"]))# (f.read(), mimetype="text/css")
 
 
-@app.route("/edit/<note>")
-def edit(note):
-    return render_template("edit.html", noteID=note)
+@app.route("/edit/{note}")
+async def edit(req):
+    note = req.path_params["note"]
+    return templates.TemplateResponse("edit.html", {
+        "request": req,
+        "noteID": note
+    })
 
 
 @app.route("/newNote")
-def newNote():
+async def new_note(req):
     location = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
-    return redirect(url_for("edit", note=location))
+
+    await database.execute(note.insert(), values={
+        "file_name": str(uuid.uuid4()),
+        "note_id": location
+    })
 
 
-@app.route("/saveNote/<note>")
-def saveNote(note):
-    pass
 
+    #user = Note.create(file_name=str(uuid.UUID()), note_id=location)
 
-app.run(host="0.0.0.0", port=8080)
+    #print(f"User({user.note_id}:{user.file_name})")
+
+    return RedirectResponse(f"/edit/{location}")
+#
+#
+# @app.route("/saveNote/<note>")
+# def saveNote(note):
+#     pass
