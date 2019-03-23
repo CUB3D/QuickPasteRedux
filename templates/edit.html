@@ -1,16 +1,19 @@
 <html>
 <head>
   <link href="/resource/spectre.min.css" rel="stylesheet">
-    <link href="/resource/core.css" rel="stylesheet">
+  <link href="/resource/core.css" rel="stylesheet">
   <script src="/resource/editor.js"></script>
+  <link href="/resource/hack.css" rel="stylesheet"/>
 </head>
 <body>
     <header class="navbar bg-dark">
       <section class="navbar-section">
-        <a href="..." class="navbar-brand mr-2">QuickPaste</a>
+        <a href="/" class="navbar-brand mr-2">
+          QuickPaste
+        </a>
       </section>
         <section class="navbar-section navbar-center">
-            <a>/note/safasf</a>
+          <label class="bg-dark">/note/{{ noteID }}</label>
         </section>
       <section class="navbar-section">
         <label>CUB3D</label>
@@ -19,7 +22,7 @@
         </figure>
       </section>
     </header>
-    <div id="edit-pane" class="editor-pane bg-dark" contenteditable="true">
+    <div id="edit-pane" class="editor-pane bg-dark" contenteditable="true" spellcheck="false">
     </div>
 </body>
 </html>
