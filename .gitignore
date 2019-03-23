@@ -162,3 +162,5 @@ QuickPaste2.iml
 .idea
 
 .env*
+
+*.db

@@ -10,12 +10,12 @@ from databases import Database
 
 config = Config(os.environ["ENV"])
 DEBUG = config("DEBUG", cast=bool, default=False)
-DB_URL = config("DATABASE_URL")
+DATABASE_URL = config("DATABASE_URL")
 
 app = Starlette(debug=DEBUG)
 templates = Jinja2Templates("templates")
 
-database = Database(DB_URL)
+database = Database(DATABASE_URL)
 
 import sqlalchemy
 
