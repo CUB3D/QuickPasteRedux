@@ -1,5 +1,5 @@
 from starlette.applications import Starlette
-from starlette.responses import HTMLResponse, FileResponse, RedirectResponse
+from starlette.responses import JSONResponse, FileResponse, RedirectResponse, PlainTextResponse
 from starlette.config import Config
 from starlette.templating import Jinja2Templates
 import os
@@ -59,6 +59,20 @@ async def edit(req):
     })
 
 
+@app.route("/view/{note}")
+async def view(req):
+    q = note.select()#.where(note.note_id == req.path_params["note"])
+    id,filePath,name = await database.fetch_one(q)
+
+    with open(os.path.join("files", filePath)) as f:
+        content = f.read()
+
+    return templates.TemplateResponse("view.html", {
+        "request": req,
+        "content": content
+    })
+
+
 @app.route("/newNote")
 async def new_note(req):
     location = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
@@ -75,6 +89,24 @@ async def new_note(req):
     #print(f"User({user.note_id}:{user.file_name})")
 
     return RedirectResponse(f"/edit/{location}")
+
+
+@app.route("/saveNote/{note}", methods=["POST"])
+async def save_note(req):
+    # Get the file path for this note
+    jsonData = await req.json()
+
+    q = note.select()#.where(note.note_id == req.path_params["note"])
+    id,filePath,name = await database.fetch_one(q)
+
+    with open(os.path.join("files", filePath), "w") as f:
+        f.write(jsonData["content"])
+
+    return JSONResponse({
+        "Status": 1
+    })
+
+
 #
 #
 # @app.route("/saveNote/<note>")

@@ -2,7 +2,6 @@
 <head>
   <link href="/resource/spectre.min.css" rel="stylesheet">
   <link href="/resource/core.css" rel="stylesheet">
-  <script src="/resource/editor.js"></script>
   <link href="/resource/hack.css" rel="stylesheet"/>
   <title>Quickpaste - {{noteID}}</title>
 </head>
@@ -23,7 +22,6 @@
         </figure>
       </section>
     </header>
-    <div id="edit-pane" class="editor-pane bg-dark" contenteditable="true" spellcheck="false">
-    </div>
+    <div id="edit-pane" class="editor-pane bg-dark" contenteditable="false" spellcheck="false">{{content}}</div>
 </body>
 </html>
