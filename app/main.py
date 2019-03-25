@@ -116,7 +116,7 @@ async def view(req):
 
 @app.route("/pygmentStyle")
 async def style(req):
-    return PlainTextResponse(HtmlFormatter().get_style_defs("#editor-pane"))
+    return PlainTextResponse(HtmlFormatter().get_style_defs("#editor-pane"), media_type="text/css")
 
 
 @app.route("/newNote")
