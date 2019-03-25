@@ -7,6 +7,10 @@ import string
 import random
 import uuid
 from databases import Database
+from urllib.parse import unquote, quote
+from pygments import highlight
+from pygments.lexers import guess_lexer
+from pygments.formatters import HtmlFormatter
 
 config = Config(os.environ["ENV"])
 DEBUG = config("DEBUG", cast=bool, default=False)
@@ -17,17 +21,26 @@ templates = Jinja2Templates("templates")
 
 database = Database(DATABASE_URL)
 
+
+from sqlalchemy import Table, Column, Integer, String
 import sqlalchemy
 
 metadata = sqlalchemy.MetaData()
 
-note = sqlalchemy.Table(
+note = Table(
     "notes",
     metadata,
-    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
-    sqlalchemy.Column("file_name", sqlalchemy.String(length=255)),
-    sqlalchemy.Column("note_id", sqlalchemy.String(length=255))
+    Column("id", Integer, primary_key=True),
+    Column("file_name", String(length=255)),
+    Column("note_id", String(length=255))
 )
+
+# class note(Base):
+#     __tablename__ = "notes"
+#
+#     id = Column(Integer, primary_key=True)
+#     file_name = Column(String(length=255))
+#     note_id = Column(String(length=255))
 
 
 @app.on_event("startup")
@@ -52,25 +65,50 @@ async def resource(req):
 
 @app.route("/edit/{note}")
 async def edit(req):
-    note = req.path_params["note"]
+    noteID = req.path_params["note"]
+
+    q = note.select().where(note.c.note_id == noteID)
+    id, filePath, name = await database.fetch_one(q)
+
+    filePath = os.path.join("files", filePath)
+
+    if os.path.exists(filePath):
+        with open(filePath) as f:
+            content = f.read()
+    else:
+        content = ""
+
     return templates.TemplateResponse("edit.html", {
         "request": req,
-        "noteID": note
+        "noteID": noteID,
+        "content": content
     })
 
 
 @app.route("/view/{note}")
 async def view(req):
-    q = note.select()#.where(note.note_id == req.path_params["note"])
+    noteID = req.path_params["note"]
+
+    q = note.select().where(note.c.note_id == noteID)
     id,filePath,name = await database.fetch_one(q)
 
     with open(os.path.join("files", filePath)) as f:
         content = f.read()
 
+    content = highlight(content, guess_lexer(content), HtmlFormatter())
+
+    print(content)
+
+
     return templates.TemplateResponse("view.html", {
         "request": req,
-        "content": content
+        "content": content,
+        "noteID": noteID
     })
+
+@app.route("/pygmentStyle")
+async def style(req):
+    return PlainTextResponse(HtmlFormatter().get_style_defs("#editor-pane"))
 
 
 @app.route("/newNote")
@@ -96,19 +134,12 @@ async def save_note(req):
     # Get the file path for this note
     jsonData = await req.json()
 
-    q = note.select()#.where(note.note_id == req.path_params["note"])
+    q = note.select().where(note.c.note_id == req.path_params["note"])
     id,filePath,name = await database.fetch_one(q)
 
     with open(os.path.join("files", filePath), "w") as f:
-        f.write(jsonData["content"])
+        f.write(unquote(jsonData["content"]))
 
     return JSONResponse({
         "Status": 1
     })
-
-
-#
-#
-# @app.route("/saveNote/<note>")
-# def saveNote(note):
-#     pass
