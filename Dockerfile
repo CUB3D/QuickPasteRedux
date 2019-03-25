@@ -7,4 +7,4 @@ RUN pip install -r ./requirements.txt
 
 EXPOSE 8080
 
-CMD hypercorn app/main.py:app -c Hypercorn-DEV.toml --access-log - --error-log -
+CMD hypercorn app/main.py:app -c $HYPERCORN_CONFIG --access-log - --error-log -

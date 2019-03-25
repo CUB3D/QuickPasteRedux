@@ -12,7 +12,7 @@ from pygments import highlight
 from pygments.lexers import guess_lexer
 from pygments.formatters import HtmlFormatter
 
-config = Config(os.environ["ENV"])
+config = Config(os.environ["STARTLETTE_CONFIG"])
 DEBUG = config("DEBUG", cast=bool, default=False)
 DATABASE_URL = config("DATABASE_URL")
 
