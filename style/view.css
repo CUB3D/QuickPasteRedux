@@ -22,10 +22,12 @@
     flex-direction: column;
 }
 
-#save-icon {
+.navbar-icon {
     width: 1.25em;
     height: 1.25em;
-    fill: white;
+}
+
+#save-icon {
     visibility: hidden;
 }
 

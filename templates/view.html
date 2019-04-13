@@ -13,6 +13,8 @@
         <a href="/" class="navbar-brand mr-2">
           QuickPaste
         </a>
+        <button id="btn-copy" class="btn btn-primary"><img alt="Share icon" src="/resource/clipboard.svg" class="navbar-icon"></button>
+        <a href="/view/{{noteID}}/raw" class="btn btn-primary" download="QP-{{noteID}}.txt"><img alt="Share icon" src="/resource/download.svg" class="navbar-icon"></a>
       </section>
         <section class="navbar-section navbar-center">
           <label class="bg-dark">/note/{{ noteID }}</label>
@@ -25,6 +27,7 @@
       </section>
     </div>
     <div id="editor-pane" class="bg-dark" contenteditable="false" spellcheck="false">{{content|safe}}</div>
+    <script src="/resource/viewer.js"></script>
 </div>
 </body>
 </html>

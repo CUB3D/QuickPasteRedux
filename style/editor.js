@@ -26,3 +26,10 @@ document.getElementById("editor-pane").onkeydown = function(evt) {
     }
     doSave();
 };
+
+document.getElementById("btn-share").onclick = function(e) {
+    let shareURL = window.location.href.replace("/edit/", "/view/");
+    navigator.clipboard.writeText(shareURL).then(function () {
+        console.log("Coppied test");
+    })
+};
