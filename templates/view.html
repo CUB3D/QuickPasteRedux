@@ -1,34 +1,37 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <link href="/resource/spectre.min.css" rel="stylesheet">
-  <link href="/resource/view.css" rel="stylesheet">
-  <link href="/resource/hack.css" rel="stylesheet"/>
   <title>Quickpaste - {{noteID}}</title>
+  <meta charset="utf-8"/>
+  <link href="/static/style/spectre.min.css" rel="stylesheet">
+  <link href="/static/style/core.css" rel="stylesheet">
+  <link href="/static/font/hack.css" rel="stylesheet"/>
   <link href="/pygmentStyle" rel="stylesheet"/>
   <link type="application/json+oembed" href="https://qp.cub3d.pw/view/{{noteID}}/embed"/>
 </head>
 <body class="bg-dark">
 <div class="bg-dark" id="full-container">
-    <div class="navbar bg-dark" id="nav">
-      <section class="navbar-section">
-        <a href="/" class="navbar-brand mr-2">
-          QuickPaste
-        </a>
-        <button id="btn-copy" class="btn btn-primary"><img alt="Share icon" src="/resource/clipboard.svg" class="navbar-icon"></button>
-        <a href="/view/{{noteID}}/raw" class="btn btn-primary" download="QP-{{noteID}}.txt"><img alt="Share icon" src="/resource/download.svg" class="navbar-icon"></a>
+  <div class="navbar bg-dark" id="nav">
+    <section class="navbar-section">
+      <a href="/" class="navbar-brand mr-2">
+        QuickPaste
+      </a>
+      <button id="btn-copy" class="btn btn-primary"><img alt="Share icon" src="/static/icon/clipboard.svg" class="navbar-icon"></button>
+      <a href="/view/{{noteID}}/raw" class="btn btn-primary" download="QP-{{noteID}}.txt"><img alt="Share icon" src="/static/icon/download.svg" class="navbar-icon"></a>
+    </section>
+      <section class="navbar-section navbar-center">
+        <label class="bg-dark">/note/{{ noteID }}</label>
       </section>
-        <section class="navbar-section navbar-center">
-          <label class="bg-dark">/note/{{ noteID }}</label>
-        </section>
-      <section class="navbar-section">
-        <label>CUB3D</label>
-        <figure class="avatar" data-initial="C" style="background-color: #5755d9;">
-          <!--<img src="img/avatar-1.png" alt="...">-->
-        </figure>
-      </section>
-    </div>
-    <div id="editor-pane" class="bg-dark" contenteditable="false" spellcheck="false">{{content|safe}}</div>
-    <script src="/resource/viewer.js"></script>
+    <section class="navbar-section">
+      <label>CUB3D</label>
+      <figure class="avatar" data-initial="C" style="background-color: #5755d9;">
+        <!--<img src="img/avatar-1.png" alt="...">-->
+      </figure>
+    </section>
+  </div>
+  <div id="editor-pane" class="bg-dark" contenteditable="false" spellcheck="false">{{content|safe}}</div>
+  <script src="/static/script/viewer.js"></script>
+  <div id="msg-overlay" class="toast toast-success fadeout"></div>
 </div>
 </body>
 </html>

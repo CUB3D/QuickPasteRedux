@@ -1,9 +1,11 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <link href="/resource/spectre.min.css" rel="stylesheet">
-  <link href="/resource/core.css" rel="stylesheet">
-  <link href="/resource/hack.css" rel="stylesheet"/>
   <title>Quickpaste - {{noteID}}</title>
+  <meta charset="utf-8"/>
+  <link href="/static/style/spectre.min.css" rel="stylesheet">
+  <link href="/static/style/core.css" rel="stylesheet">
+  <link href="/static/font/hack.css" rel="stylesheet"/>
 </head>
 <body>
   <div class="bg-dark" id="full-container">
@@ -12,11 +14,11 @@
         <a href="/" class="navbar-brand mr-2">
           QuickPaste
         </a>
-        <button id="btn-share" class="btn btn-primary"><img alt="Share icon" src="/resource/share.svg" class="navbar-icon"></button>
+        <button id="btn-share" class="btn btn-primary"><img alt="Share icon" src="/static/icon/share.svg" class="navbar-icon"></button>
       </section>
         <section class="navbar-section navbar-center">
           <label class="bg-dark">/note/{{ noteID }}</label>
-          <img src="/resource/save.svg" alt="save icon" id="save-icon" class="navbar-icon">
+          <img src="/static/icon/save.svg" alt="save icon" id="save-icon" class="navbar-icon">
         </section>
       <section class="navbar-section">
         <label>CUB3D</label>
@@ -26,7 +28,8 @@
       </section>
     </div>
     <textarea id="editor-pane" class="bg-dark" spellcheck="false">{{content}}</textarea>
+    <div id="msg-overlay" class="toast toast-success fadeout"></div>
   </div>
-  <script src="/resource/editor.js"></script>
+  <script src="/static/script/editor.js"></script>
 </body>
 </html>

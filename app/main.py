@@ -2,15 +2,19 @@ from starlette.applications import Starlette
 from starlette.responses import JSONResponse, FileResponse, RedirectResponse, PlainTextResponse
 from starlette.config import Config
 from starlette.templating import Jinja2Templates
+from starlette.routing import Mount, Route, Router
+from starlette.staticfiles import StaticFiles
 import os
 import string
 import random
 import uuid
 from databases import Database
-from urllib.parse import unquote, quote
+from urllib.parse import unquote
 from pygments import highlight
 from pygments.lexers import guess_lexer
 from pygments.formatters import HtmlFormatter
+from sqlalchemy import Table, Column, Integer, String
+import sqlalchemy
 
 config = Config(os.environ["STARTLETTE_CONFIG"])
 DEBUG = config("DEBUG", cast=bool, default=False)
@@ -18,12 +22,10 @@ DATABASE_URL = config("DATABASE_URL")
 
 app = Starlette(debug=DEBUG)
 templates = Jinja2Templates("templates")
+app.mount('/static', StaticFiles(directory='static'))
+
 
 database = Database(DATABASE_URL)
-
-
-from sqlalchemy import Table, Column, Integer, String
-import sqlalchemy
 
 metadata = sqlalchemy.MetaData()
 
@@ -35,13 +37,6 @@ note = Table(
     Column("note_id", String(length=255)),
     Column("security_key", String(length=255))
 )
-
-# class note(Base):
-#     __tablename__ = "notes"
-#
-#     id = Column(Integer, primary_key=True)
-#     file_name = Column(String(length=255))
-#     note_id = Column(String(length=255))
 
 
 @app.on_event("startup")
@@ -57,11 +52,6 @@ async def shutdown():
 @app.route("/")
 async def root(req):
     return templates.TemplateResponse("main.html", {"request": req})
-
-
-@app.route("/resource/{file}")
-async def resource(req):
-    return FileResponse(os.path.join("/home/code/style/", req.path_params["file"]))# (f.read(), mimetype="text/css")
 
 
 @app.route("/edit/{note}")
@@ -115,7 +105,7 @@ async def view(req):
 
 
 @app.route("/view/{note}/raw")
-async def viewRaw(req):
+async def view_raw(req):
     noteID = req.path_params["note"]
 
     q = note.select().where(note.c.note_id == noteID)
@@ -133,7 +123,7 @@ async def viewRaw(req):
 
 
 @app.route("/view/{note}/embed")
-async def viewRaw(req):
+async def view_raw(req):
     noteID = req.path_params["note"]
 
     q = note.select().where(note.c.note_id == noteID)
@@ -174,12 +164,6 @@ async def new_note(req):
         "note_id": location,
         "security_key": securityKey
     })
-
-
-
-    #user = Note.create(file_name=str(uuid.UUID()), note_id=location)
-
-    #print(f"User({user.note_id}:{user.file_name})")
 
     resp = RedirectResponse(f"/edit/{location}")
     resp.set_cookie(f"{location}_securityKey", securityKey)

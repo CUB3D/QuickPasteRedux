@@ -28,8 +28,16 @@ document.getElementById("editor-pane").onkeydown = function(evt) {
 };
 
 document.getElementById("btn-share").onclick = function(e) {
+    let alert = document.getElementById("msg-overlay");
     let shareURL = window.location.href.replace("/edit/", "/view/");
     navigator.clipboard.writeText(shareURL).then(function () {
-        console.log("Coppied test");
+        alert.style.transition = "none";
+        alert.style.opacity = "1";
+        alert.style.visibility = "visible";
+        setTimeout(function(){
+            alert.style.transition = "";
+            alert.style.opacity = "0";
+        }, 1000);
+        alert.innerText = "Link copied";
     })
 };
