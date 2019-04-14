@@ -132,6 +132,33 @@ async def viewRaw(req):
     return PlainTextResponse(content, media_type="text/plain")
 
 
+@app.route("/view/{note}/embed")
+async def viewRaw(req):
+    noteID = req.path_params["note"]
+
+    q = note.select().where(note.c.note_id == noteID)
+    id, filePath, name, securityKey = await database.fetch_one(q)
+
+    filePath = os.path.join("files", filePath)
+
+    if os.path.exists(filePath):
+        with open(filePath) as f:
+            content = f.read()
+    else:
+        return RedirectResponse("/")
+
+    content = highlight(content, guess_lexer(content), HtmlFormatter())
+
+    return JSONResponse({
+        "version": "1.0",
+        "type": "rich",
+        "title": noteID,
+        "width": 200,
+        "height": 200,
+        "html": content[:250]
+    })
+
+
 @app.route("/pygmentStyle")
 async def style(req):
     return PlainTextResponse(HtmlFormatter().get_style_defs("#editor-pane"), media_type="text/css")
