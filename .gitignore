@@ -166,3 +166,5 @@ QuickPaste2.iml
 *.db
 
 files/
+
+.env-PROD

@@ -1,0 +1,4 @@
+debug = false
+bind = ["0.0.0.0:8080"]
+use_reloader = false
+workers = 4

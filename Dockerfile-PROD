@@ -1,0 +1,20 @@
+FROM python:3.7-slim
+
+WORKDIR /home/code
+
+RUN mkdir files
+
+COPY ./requirements.txt ./
+RUN pip install -r ./requirements.txt
+
+COPY ./Hypercorn-PROD.toml ./Hypercorn-PROD.toml
+COPY ./.env-PROD ./.env-PROD
+COPY ./alembic.ini ./alembic.ini
+
+COPY ./templates ./templates
+COPY ./static ./static
+COPY ./app ./app
+
+RUN STARTLETTE_CONFIG=.env-PROD alembic upgrade head
+
+CMD STARTLETTE_CONFIG=.env-PROD hypercorn app/main.py:app -c Hypercorn-PROD.toml --access-log - --error-log -
