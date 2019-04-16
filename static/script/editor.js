@@ -29,8 +29,7 @@ document.onload = function() {
     computeLinecount();
 };
 
-function doSave() {
-    let originalText = document.getElementById("editor-pane").value;
+function doSave(originalText) {
     let text = encodeURIComponent(originalText);
 
     if(text[text.length-1] === '\n')
@@ -50,18 +49,15 @@ function doSave() {
     r.send('{"content": "' + text + '"}')
 }
 
-let editorPane = document.getElementById("editor-pane");
-editorPane.onkeydown = function(evt) {
-    document.getElementById("save-icon").style.visibility = "visible";
-    if(evt.ctrlKey && evt.key === "s") {
-        doSave();
-        evt.preventDefault();
-    }
-    computeLinecount();
-    doSave();
-};
-// editorPane.onkeyup = function() {
+// let editorPane = document.getElementById("editor-pane");
+// editorPane.onkeydown = function(evt) {
+//     document.getElementById("save-icon").style.visibility = "visible";
+//     if(evt.ctrlKey && evt.key === "s") {
+//         doSave(    let originalText = editorPane.value);
+//         evt.preventDefault();
+//     }
 //     computeLinecount();
+//     doSave(editorPane.value);
 // };
 
 document.getElementById("btn-share").onclick = function(e) {
@@ -78,3 +74,25 @@ document.getElementById("btn-share").onclick = function(e) {
         alert.innerText = "Link copied";
     })
 };
+
+let cm = CodeMirror.fromTextArea(document.getElementById("editor-pane"), {
+    theme: "dark",
+    scrollbarStyle: "null",
+    lineNumbers: true,
+    autofocus: true
+});
+
+cm.on("change", function(cm, change) {
+    doSave(cm.getValue());
+});
+
+// var cm = CodeMirror(function(e) {
+//     e.classList.add("bg-dark");
+//     document.getElementById("body-container").appendChild(e);
+// }, {
+//     value: "test123",
+//     theme: "dark",
+//     scrollbarStyle: "null",
+//     lineNumbers: true,
+//     autofocus: true
+// });

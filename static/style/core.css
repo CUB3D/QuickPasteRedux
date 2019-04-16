@@ -24,6 +24,7 @@
     display: flex;
     width: 100%;
     flex-direction: column;
+    height: 100%;
 }
 
 html,body {
@@ -86,4 +87,25 @@ pre {
     width: 100%;
     height: 100%;
     display: flex;
+}
+
+.cm-s-dark {
+    flex: 1;
+    color: #fff !important;
+    caret-color: #fff !important;
+    height: 100% !important;
+    font-family: Hack, monospace !important;
+    background-color: #303742 !important;
+}
+
+.CodeMirror-gutter {
+    background-color: #303742 !important;
+}
+
+.CodeMirror-gutters {
+    border-right: 1px solid #000 !important;
+}
+
+.CodeMirror-cursor {
+    border-left: #fff solid 1px !important;
 }

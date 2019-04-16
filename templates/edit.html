@@ -6,6 +6,10 @@
   <link href="/static/style/spectre.min.css" rel="stylesheet"/>
   <link href="/static/style/core.css" rel="stylesheet"/>
   <link href="/static/font/hack.css" rel="stylesheet"/>
+
+  <link href="/static/lib/codemirror/codemirror.css" rel="stylesheet"/>
+  <script src="/static/lib/codemirror/codemirror.js"></script>
+  <script src="/static/lib/codemirror/mode/javascript/javascript.js"></script>
 </head>
 <body>
   <div class="bg-dark" id="full-container">
@@ -28,13 +32,13 @@
       </section>
     </div>
     <div id="body-container" class="bg-dark">
-      <div id="numbers-pane" class="bg-dark">
-        <ul id="numbers-list" class="bg-dark">
-          {% for i in range(content.split("\n")|length) %}
-            <li>{{i+1}}</li>
-          {% endfor %}
-        </ul>
-      </div>
+{#      <div id="numbers-pane" class="bg-dark">#}
+{#        <ul id="numbers-list" class="bg-dark">#}
+{#          {% for i in range(content.split("\n")|length) %}#}
+{#            <li>{{i+1}}</li>#}
+{#          {% endfor %}#}
+{#        </ul>#}
+{#      </div>#}
       <textarea id="editor-pane" class="bg-dark" spellcheck="false">{{content}}</textarea>
     </div>
     <div id="msg-overlay" class="toast toast-success fadeout"></div>
