@@ -29,7 +29,17 @@
       </figure>
     </section>
   </div>
-  <div id="editor-pane" class="bg-dark" contenteditable="false" spellcheck="false">{{content|safe}}</div>
+  <div id="body-container">
+    <div id="numbers-pane">
+      <ul>
+        {% for i in range(contentRaw.split("\n")|length) %}
+          <li>{{i+1}}</li>
+        {% endfor %}
+        
+      </ul>
+    </div>
+    <div id="editor-pane" class="bg-dark" contenteditable="false" spellcheck="false">{{content|safe}}</div>
+  </div>
   <script src="/static/script/viewer.js"></script>
   <div id="msg-overlay" class="toast toast-success fadeout"></div>
 </div>

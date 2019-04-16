@@ -91,15 +91,16 @@ async def view(req):
 
     if os.path.exists(filePath):
         with open(filePath) as f:
-            content = f.read()
+            contentRaw = f.read()
     else:
         return RedirectResponse("/")
 
-    content = highlight(content, guess_lexer(content), HtmlFormatter())
+    content = highlight(contentRaw, guess_lexer(contentRaw), HtmlFormatter())
 
     return templates.TemplateResponse("view.html", {
         "request": req,
         "content": content,
+        "contentRaw": contentRaw,
         "noteID": noteID
     })
 

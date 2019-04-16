@@ -1,5 +1,37 @@
+function computeLinecount() {
+    let originalText = document.getElementById("editor-pane").value;
+
+    let numbers = document.getElementById("numbers-list");
+    // Remove all the numbers
+    while(numbers.hasChildNodes()) {
+        numbers.removeChild(numbers.lastChild);
+    }
+
+    // Add the numbers back
+    for(var i = 0; i < originalText.split("\n").length; i++) {
+        let elem = document.createElement("li");
+        elem.textContent = "" + (i+1);
+
+
+        numbers.appendChild(elem)
+        //
+        // let lastNode = numbers.lastChild;
+        //
+        // if(lastNode != null) {
+        //     lastNode = lastNode.nextSibling;
+        // }
+        //
+        // numbers.insertBefore(elem, lastNode);
+    }
+}
+
+document.onload = function() {
+    computeLinecount();
+};
+
 function doSave() {
-    let text = encodeURIComponent(document.getElementById("editor-pane").value);
+    let originalText = document.getElementById("editor-pane").value;
+    let text = encodeURIComponent(originalText);
 
     if(text[text.length-1] === '\n')
         text = text.slice(0,-1);
@@ -18,14 +50,19 @@ function doSave() {
     r.send('{"content": "' + text + '"}')
 }
 
-document.getElementById("editor-pane").onkeydown = function(evt) {
+let editorPane = document.getElementById("editor-pane");
+editorPane.onkeydown = function(evt) {
     document.getElementById("save-icon").style.visibility = "visible";
     if(evt.ctrlKey && evt.key === "s") {
         doSave();
         evt.preventDefault();
     }
+    computeLinecount();
     doSave();
 };
+// editorPane.onkeyup = function() {
+//     computeLinecount();
+// };
 
 document.getElementById("btn-share").onclick = function(e) {
     let alert = document.getElementById("msg-overlay");
