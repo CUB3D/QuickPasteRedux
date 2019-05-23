@@ -1,7 +1,4 @@
 #editor-pane {
-    /*display: inline-block;*/
-    /*display: flex;*/
-    /*width: 100%;*/
     font-family: Hack, monospace;
     white-space: pre-wrap;
     border-style: none;
@@ -9,9 +6,6 @@
     flex: 1;
     margin: 0 0 0 3px;
     overflow-y: hidden;
-
-    /*height: 100%;*/
-    /*float: right;*/
 }
 
 #nav {
@@ -57,6 +51,7 @@ pre {
     position: absolute;
     bottom: 0;
     visibility: hidden;
+    z-index: 100;
 }
 
 .fadeout {
