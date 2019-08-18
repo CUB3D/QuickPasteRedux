@@ -3,8 +3,9 @@ hypercorn
 jinja2
 aiofiles
 databases
-databases[sqlite]
+databases[mysql]
 sqlalchemy
-aiosqlite
+aiomysql
 alembic
+mysqlclient
 pygments

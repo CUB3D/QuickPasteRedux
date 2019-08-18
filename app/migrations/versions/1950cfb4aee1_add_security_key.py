@@ -17,7 +17,7 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('notes', sa.Column('security_key', sa.String()))
+    op.add_column('notes', sa.Column('security_key', sa.String(128)))
 
 
 def downgrade():
