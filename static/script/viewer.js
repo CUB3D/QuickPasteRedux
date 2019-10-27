@@ -12,3 +12,11 @@ document.getElementById("btn-copy").onclick = function(e) {
         alert.innerText = "Note copied";
     });
 };
+
+ukauth.init({
+    APP_ID: "3qiADDS0c3ik0MAvgYuYno25PstbBl9o"
+});
+ukauth.onLogin((user) => {
+    console.log(user.username + " has logged in");
+});
+ukauth.oneClickLogin();

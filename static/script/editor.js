@@ -77,7 +77,7 @@ document.getElementById("btn-share").onclick = function(e) {
 
 let cm = CodeMirror.fromTextArea(document.getElementById("editor-pane"), {
     theme: "dark",
-    scrollbarStyle: "null",
+    // scrollbarStyle: "null",
     lineNumbers: true,
     autofocus: true
 });

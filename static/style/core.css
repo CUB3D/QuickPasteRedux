@@ -8,6 +8,22 @@
     overflow-y: hidden;
 }
 
+#view-pane {
+    /*display: inline-block;*/
+    /*display: flex;*/
+    width: 100%;
+    font-family: Hack, monospace;
+    white-space: pre-wrap;
+    border-style: none;
+    padding: 0;
+    flex: 1;
+    margin: 0 0 0 3px;
+    overflow-y: hidden;
+
+    height: 100%;
+    /*float: right;*/
+}
+
 #nav {
     padding: 0.1em 0;
     border-bottom: #000000 0.1em solid;
@@ -64,6 +80,7 @@ pre {
     padding: 0;
     margin: 0;
     border-right: #000000 0.1em solid;
+    height: 100%;
 }
 
 #numbers-pane > ul {
@@ -79,9 +96,19 @@ pre {
 }
 
 #body-container {
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    /*height: 100%;*/
     display: flex;
+}
+
+div.CodeMirror {
+    overflow: hidden !important;
+}
+
+div.CodeMirror-scroll {
+    height: unset !important;
+    /*Check this*/
+    overflow: unset !important;
 }
 
 .cm-s-dark {
