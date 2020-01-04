@@ -15,6 +15,7 @@ from pygments.lexers import guess_lexer
 from pygments.formatters import HtmlFormatter
 from sqlalchemy import Table, Column, Integer, String
 import sqlalchemy
+from authlib.jose import jwt
 
 config = Config(os.environ["STARTLETTE_CONFIG"])
 DEBUG = config("DEBUG", cast=bool, default=False)
@@ -51,7 +52,20 @@ async def shutdown():
 
 @app.route("/")
 async def root(req):
-    return templates.TemplateResponse("main.html", {"request": req})
+    print(req)
+    authCookie = req.cookies.get('UK_APP_AUTH')
+    if authCookie is not None:
+        print("Got auth cookie: " + authCookie)
+
+        with open("./public.pem") as kf:
+            public_key = kf.read()
+
+        claims = jwt.decode(authCookie, public_key)
+
+        return templates.TemplateResponse("main.html", {"request": req, "login": False, "user": claims})
+    else:
+        print("Requesting login")
+        return templates.TemplateResponse("main.html", {"request": req, "login": True, "user": {}})
 
 
 @app.route("/edit/{note}")
@@ -124,7 +138,7 @@ async def view_raw(req):
 
 
 @app.route("/view/{note}/embed")
-async def view_raw(req):
+async def view_oembed(req):
     noteID = req.path_params["note"]
 
     q = note.select().where(note.c.note_id == noteID)

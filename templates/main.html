@@ -4,18 +4,32 @@
   <title>QuickPaste</title>
   <meta charset="utf-8"/>
   <link href="/static/style/spectre.min.css" rel="stylesheet">
+  <script src="http://localhost:8085/ukauth.js"></script>
+  <script>
+      let appDescription = {
+          APP_ID: "9kAw0wuU0JCPgAXGSSD942F2OkmHNMUQ",
+          callback: function (user) {
+              console.log("User logged in: " + user.username);
+          }
+      };
+      ukauth.init(appDescription);
+  </script>
 </head>
   <body class="bg-dark">
     <header class="navbar">
       <section class="navbar-section">
-        <a href="/" class="navbar-brand mr-2">QuickPaste</a>
+        <a href="/" class="navbar-brand mr-2 ml-2">QuickPaste</a>
         <a class="btn btn-primary" href="/newNote">New note</a>
       </section>
       <section class="navbar-section">
-        <label>CUB3D</label>
-        <figure class="avatar" data-initial="YZ" style="background-color: #5755d9;">
-          <!--<img src="img/avatar-1.png" alt="...">-->
-        </figure>
+        {% if login %}
+          <button id="CUBIC_LOGIN" class="btn btn-primary">Login</button>
+        {% else %}
+          <label class="mr-1">{{ user['username'] }}</label>
+          <figure class="avatar mr-2" data-initial="{{ user['username'][0].upper() }}" style="background-color: #5755d9;">
+            <!--<img src="img/avatar-1.png" alt="...">-->
+          </figure>
+        {% endif %}
       </section>
     </header>
   </body>

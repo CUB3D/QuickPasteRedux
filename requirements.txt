@@ -9,3 +9,4 @@ aiomysql
 alembic
 mysqlclient
 pygments
+authlib
