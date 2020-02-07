@@ -29,5 +29,6 @@ note = sqlalchemy.Table(
     metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column("file_name", sqlalchemy.String(length=255)),
-    sqlalchemy.Column("note_id", sqlalchemy.String(length=255))
+    sqlalchemy.Column("note_id", sqlalchemy.String(length=255)),
+    sqlalchemy.Column("owner", sqlalchemy.Integer)
 )

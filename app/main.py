@@ -36,7 +36,8 @@ note = Table(
     Column("id", Integer, primary_key=True),
     Column("file_name", String(length=255)),
     Column("note_id", String(length=255)),
-    Column("security_key", String(length=255))
+    Column("security_key", String(length=255)),
+    Column("owner", Integer)
 )
 
 
@@ -50,9 +51,7 @@ async def shutdown():
     await database.disconnect()
 
 
-@app.route("/")
-async def root(req):
-    print(req)
+def get_request_claims(req):
     authCookie = req.cookies.get('UK_APP_AUTH')
     if authCookie is not None:
         print("Got auth cookie: " + authCookie)
@@ -61,11 +60,22 @@ async def root(req):
             public_key = kf.read()
 
         claims = jwt.decode(authCookie, public_key)
+        print("Claims: " + str(claims))
+        return claims
+    else:
+        return None
 
-        return templates.TemplateResponse("main.html", {"request": req, "login": False, "user": claims})
+
+@app.route("/")
+async def root(req):
+    claims = get_request_claims(req)
+    if claims:
+        user_notes = await database.fetch_all(note.select().where(note.c.owner == claims["userId"]))
+        print(user_notes)
+        return templates.TemplateResponse("main.html", {"request": req, "login": False, "user": claims, "notes": user_notes})
     else:
         print("Requesting login")
-        return templates.TemplateResponse("main.html", {"request": req, "login": True, "user": {}})
+        return templates.TemplateResponse("main.html", {"request": req, "login": True, "user": {}, "notes": []})
 
 
 @app.route("/edit/{note}")
@@ -73,7 +83,7 @@ async def edit(req):
     noteID = req.path_params["note"]
 
     q = note.select().where(note.c.note_id == noteID)
-    id, filePath, name, securityKey = await database.fetch_one(q)
+    id, filePath, name, securityKey, owner = await database.fetch_one(q)
 
     # Make sure the user can edit this file
     if securityKey != req.cookies.get(f"{noteID}_securityKey"):
@@ -171,13 +181,16 @@ async def style(req):
 
 @app.route("/newNote")
 async def new_note(req):
+    claims = get_request_claims(req)
+
     location = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
     securityKey = str(uuid.uuid4())
 
     await database.execute(note.insert(), values={
         "file_name": str(uuid.uuid4()),
         "note_id": location,
-        "security_key": securityKey
+        "security_key": securityKey,
+        "owner": -1 if claims is None else claims["userId"]
     })
 
     resp = RedirectResponse(f"/edit/{location}")
