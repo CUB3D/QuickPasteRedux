@@ -10,3 +10,4 @@ services:
       - ENV=${ENV}
       - STARTLETTE_CONFIG=.env-${ENV}
       - HYPERCORN_CONFIG=Hypercorn-${ENV}.toml
+    restart: unless-stopped
