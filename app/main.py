@@ -1,8 +1,7 @@
 from starlette.applications import Starlette
-from starlette.responses import JSONResponse, FileResponse, RedirectResponse, PlainTextResponse
+from starlette.responses import JSONResponse, RedirectResponse, PlainTextResponse, Response
 from starlette.config import Config
 from starlette.templating import Jinja2Templates
-from starlette.routing import Mount, Route, Router
 from starlette.staticfiles import StaticFiles
 import os
 import string
@@ -52,16 +51,11 @@ async def shutdown():
 
 
 def get_request_claims(req):
-    authCookie = req.cookies.get('UK_APP_AUTH')
-    if authCookie is not None:
-        print("Got auth cookie: " + authCookie)
-
+    auth_cookie = req.cookies.get('UK_APP_AUTH')
+    if auth_cookie is not None:
         with open("./public.pem") as kf:
             public_key = kf.read()
-
-        claims = jwt.decode(authCookie, public_key)
-        print("Claims: " + str(claims))
-        return claims
+        return jwt.decode(auth_cookie, public_key)
     else:
         return None
 
@@ -71,7 +65,6 @@ async def root(req):
     claims = get_request_claims(req)
     if claims:
         user_notes = await database.fetch_all(note.select().where(note.c.owner == claims["userId"]))
-        print(user_notes)
         return templates.TemplateResponse("main.html", {"request": req, "user": claims, "notes": user_notes})
     else:
         # User not logged in so redirect to new note
@@ -82,26 +75,26 @@ async def root(req):
 async def edit(req):
     claims = get_request_claims(req)
 
-    noteID = req.path_params["note"]
+    db_note = await database.fetch_one(note.select().where(note.c.note_id == req.path_params["note"]))
 
-    q = note.select().where(note.c.note_id == noteID)
-    id, filePath, name, securityKey, owner = await database.fetch_one(q)
+    if db_note is None:
+        return RedirectResponse("/")
 
     # Make sure the user can edit this file
-    if securityKey != req.cookies.get(f"{noteID}_securityKey"):
-        return RedirectResponse(f"/view/{noteID}")
+    if db_note.security_key != req.cookies.get(f"{db_note.note_id}_securityKey"):
+        return RedirectResponse(f"/view/{db_note.note_id}")
 
-    filePath = os.path.join("files", filePath)
+    file_path = os.path.join("files", db_note.file_name)
 
-    if os.path.exists(filePath):
-        with open(filePath) as f:
+    if os.path.exists(file_path):
+        with open(file_path) as f:
             content = f.read()
     else:
         content = ""
 
     return templates.TemplateResponse("edit.html", {
         "request": req,
-        "noteID": noteID,
+        "noteID": db_note.note_id,
         "content": content,
         "user": claims
     })
@@ -109,40 +102,41 @@ async def edit(req):
 
 @app.route("/view/{note}")
 async def view(req):
-    noteID = req.path_params["note"]
+    db_note = await database.fetch_one(note.select().where(note.c.note_id == req.path_params["note"]))
 
-    q = note.select().where(note.c.note_id == noteID)
-    id, filePath, name, securityKey = await database.fetch_one(q)
+    if db_note is None:
+        return RedirectResponse("/")
 
-    filePath = os.path.join("files", filePath)
+    file_name = os.path.join("files", db_note.file_name)
 
-    if os.path.exists(filePath):
-        with open(filePath) as f:
-            contentRaw = f.read()
+    if os.path.exists(file_name):
+        with open(file_name) as f:
+            content_raw = f.read()
     else:
         return RedirectResponse("/")
 
-    content = highlight(contentRaw, guess_lexer(contentRaw), HtmlFormatter())
+    content = highlight(content_raw, guess_lexer(content_raw), HtmlFormatter())
 
     return templates.TemplateResponse("view.html", {
         "request": req,
         "content": content,
-        "contentRaw": contentRaw,
-        "noteID": noteID
+        "contentRaw": content_raw,
+        "noteID": db_note.note_id,
+        "user": get_request_claims(req)
     })
 
 
 @app.route("/view/{note}/raw")
 async def view_raw(req):
-    noteID = req.path_params["note"]
+    db_note = await database.fetch_one(note.select().where(note.c.note_id == req.path_params["note"]))
 
-    q = note.select().where(note.c.note_id == noteID)
-    id, filePath, name, securityKey = await database.fetch_one(q)
+    if db_note is None:
+        return RedirectResponse("/")
 
-    filePath = os.path.join("files", filePath)
+    file_path = os.path.join("files", db_note.file_name)
 
-    if os.path.exists(filePath):
-        with open(filePath) as f:
+    if os.path.exists(file_path):
+        with open(file_path) as f:
             content = f.read()
     else:
         return RedirectResponse("/")
@@ -187,20 +181,21 @@ async def new_note(req):
     claims = get_request_claims(req)
 
     location = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
-    securityKey = str(uuid.uuid4())
+    security_key = str(uuid.uuid4())
 
     await database.execute(note.insert(), values={
         "file_name": str(uuid.uuid4()),
         "note_id": location,
-        "security_key": securityKey,
+        "security_key": security_key,
         "owner": -1 if claims is None else claims["userId"]
     })
 
     resp = RedirectResponse(f"/edit/{location}")
-    resp.set_cookie(f"{location}_securityKey", securityKey)
+    resp.set_cookie(f"{location}_securityKey", security_key)
     return resp
 
 
+# Consider using a websocket in future
 @app.route("/saveNote/{note}", methods=["POST"])
 async def save_note(req):
     # Get the file path for this note
@@ -208,7 +203,8 @@ async def save_note(req):
 
     db_note = await database.fetch_one(note.select().where(note.c.note_id == req.path_params["note"]))
 
-    print(db_note)
+    if db_note.security_key != req.cookies.get(f"{db_note.note_id}_securityKey"):
+        return Response(status_code=403)
 
     with open(os.path.join("files", db_note.file_name), "w") as f:
         f.write(unquote(json_data["content"]))

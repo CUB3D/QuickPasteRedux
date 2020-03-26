@@ -4,18 +4,6 @@
   {% include 'tmp_head_base.html' %}
 
   <title>QuickPaste</title>
-  <link href="/static/style/spectre.min.css" rel="stylesheet">
-  <script src="http://localhost:8085/ukauth.js"></script>
-  <script src="https://storage.cub3d.pw/auth/ukauth.js"></script>
-  <script>
-      let appDescription = {
-          APP_ID: "9kAw0wuU0JCPgAXGSSD942F2OkmHNMUQ",
-          callback: function (user) {
-              console.log("User logged in: " + user.username);
-          }
-      };
-      ukauth.init(appDescription);
-  </script>
 </head>
   <body class="bg-dark">
     <header class="navbar">

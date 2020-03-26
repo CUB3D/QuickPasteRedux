@@ -30,5 +30,6 @@ note = sqlalchemy.Table(
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column("file_name", sqlalchemy.String(length=255)),
     sqlalchemy.Column("note_id", sqlalchemy.String(length=255)),
+    sqlalchemy.Column('security_key', sqlalchemy.String(length=128)),
     sqlalchemy.Column("owner", sqlalchemy.Integer)
 )
