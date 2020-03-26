@@ -72,14 +72,16 @@ async def root(req):
     if claims:
         user_notes = await database.fetch_all(note.select().where(note.c.owner == claims["userId"]))
         print(user_notes)
-        return templates.TemplateResponse("main.html", {"request": req, "login": False, "user": claims, "notes": user_notes})
+        return templates.TemplateResponse("main.html", {"request": req, "user": claims, "notes": user_notes})
     else:
-        print("Requesting login")
-        return templates.TemplateResponse("main.html", {"request": req, "login": True, "user": {}, "notes": []})
+        # User not logged in so redirect to new note
+        return RedirectResponse(f"/newNote")
 
 
 @app.route("/edit/{note}")
 async def edit(req):
+    claims = get_request_claims(req)
+
     noteID = req.path_params["note"]
 
     q = note.select().where(note.c.note_id == noteID)
@@ -100,7 +102,8 @@ async def edit(req):
     return templates.TemplateResponse("edit.html", {
         "request": req,
         "noteID": noteID,
-        "content": content
+        "content": content,
+        "user": claims
     })
 
 
@@ -201,13 +204,14 @@ async def new_note(req):
 @app.route("/saveNote/{note}", methods=["POST"])
 async def save_note(req):
     # Get the file path for this note
-    jsonData = await req.json()
+    json_data = await req.json()
 
-    q = note.select().where(note.c.note_id == req.path_params["note"])
-    id, filePath, name, sk = await database.fetch_one(q)
+    db_note = await database.fetch_one(note.select().where(note.c.note_id == req.path_params["note"]))
 
-    with open(os.path.join("files", filePath), "w") as f:
-        f.write(unquote(jsonData["content"]))
+    print(db_note)
+
+    with open(os.path.join("files", db_note.file_name), "w") as f:
+        f.write(unquote(json_data["content"]))
 
     return JSONResponse({
         "Status": 1

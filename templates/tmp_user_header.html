@@ -1,0 +1,10 @@
+<section class="navbar-section">
+  {% if user == None %}
+    <button id="CUBIC_LOGIN" class="btn btn-primary">Login</button>
+  {% else %}
+    <label class="mr-1">{{ user['username'] }}</label>
+    <figure class="avatar mr-2" data-initial="{{ user['username'][0].upper() }}" style="background-color: #5755d9;">
+      <!--<img src="img/avatar-1.png" alt="...">-->
+    </figure>
+  {% endif %}
+</section>

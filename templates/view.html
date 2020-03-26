@@ -1,13 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  {% include 'tmp_head_base.html' %}
+
   <title>Quickpaste - {{noteID}}</title>
-  <meta charset="utf-8"/>
+
   <link href="/static/style/spectre.min.css" rel="stylesheet">
   <link href="/static/style/core.css" rel="stylesheet"/>
   <link href="/static/font/hack.css" rel="stylesheet"/>
   <link href="/pygmentStyle" rel="stylesheet"/>
   <link type="application/json+oembed" href="https://qp.cub3d.pw/view/{{noteID}}/embed"/>
+
+  <meta property="og:url" content="https://qp.cub3d.pw/view/{{noteID}}">
+  <meta property="og:title" content="QuickPaste - {{noteID}}">
+  <meta property="og:description" content="{{content}}">
+  <meta property="og:site_name" content="QuickPaste">
+
+  <meta name="twitter:card" content="summary">
+
 </head>
 <body class="bg-dark">
 <div class="bg-dark" id="full-container">
@@ -22,12 +32,7 @@
       <section class="navbar-section navbar-center">
         <label class="bg-dark">/note/{{ noteID }}</label>
       </section>
-    <section class="navbar-section">
-      <label>CUB3D</label>
-      <figure class="avatar" data-initial="C" style="background-color: #5755d9;">
-        <!--<img src="img/avatar-1.png" alt="...">-->
-      </figure>
-    </section>
+    {% include 'tmp_user_header.html' %}
   </div>
   <div id="body-container">
     <div id="numbers-pane">

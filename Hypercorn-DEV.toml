@@ -1,4 +1,4 @@
 debug = true
-bind = ["0.0.0.0:8080"]
+bind = ["0.0.0.0:8086"]
 use_reloader = true
 workers = 1
