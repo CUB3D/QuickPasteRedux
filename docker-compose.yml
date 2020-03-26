@@ -3,7 +3,7 @@ services:
   web:
     build: .
     ports:
-      - "${PORT}:8080"
+      - "8086:8080"
     volumes:
       - .:/home/code/
     environment:
