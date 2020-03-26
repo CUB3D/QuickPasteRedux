@@ -1,13 +1,13 @@
 version: '3'
 services:
-  web:
+  QuickPasteRedux:
+    container_name: Web
     build: .
     ports:
       - "8086:8080"
     volumes:
-      - .:/home/code/
+      - files:/home/code/files
     environment:
-      - ENV=${ENV}
-      - STARTLETTE_CONFIG=.env-${ENV}
-      - HYPERCORN_CONFIG=Hypercorn-${ENV}.toml
     restart: unless-stopped
+volumes:
+  files:

@@ -16,7 +16,7 @@
 
   <h1>Your notes</h1>
   {% for note in notes %}
-    <p>{{ note.note_id }}</p>
+    <a href="/edit/{{note.note_id}}"><p>{{ note.note_id }}</p></a>
   {% endfor %}
   </body>
 </html>
