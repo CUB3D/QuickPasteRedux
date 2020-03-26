@@ -16,7 +16,7 @@ from sqlalchemy import Table, Column, Integer, String
 import sqlalchemy
 from authlib.jose import jwt
 
-config = Config(os.environ["STARTLETTE_CONFIG"])
+config = Config(".env")
 DEBUG = config("DEBUG", cast=bool, default=False)
 DATABASE_URL = config("DATABASE_URL")
 

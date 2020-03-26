@@ -168,3 +168,5 @@ QuickPaste2.iml
 files/
 
 .env
+
+public.pem

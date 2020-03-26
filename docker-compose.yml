@@ -1,6 +1,6 @@
 version: '3'
 services:
-  QuickPasteRedux:
+  quickpasteredux:
     container_name: Web
     build: .
     ports:
@@ -8,6 +8,8 @@ services:
     volumes:
       - files:/home/code/files
     environment:
+      DEBUG: "false"
+      DATABASE_URL: <TODO>
     restart: unless-stopped
 volumes:
   files:

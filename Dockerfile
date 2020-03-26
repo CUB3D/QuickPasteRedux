@@ -9,13 +9,10 @@ COPY ./requirements.txt ./
 RUN pip install -r ./requirements.txt
 
 COPY ./Hypercorn-PROD.toml ./Hypercorn.toml
-COPY ./.env ./.env
 COPY ./alembic.ini ./alembic.ini
 
 COPY ./templates ./templates
 COPY ./static ./static
 COPY ./app ./app
 
-RUN STARTLETTE_CONFIG=.env alembic upgrade head
-
-CMD STARTLETTE_CONFIG=.env hypercorn app/main.py:app -c Hypercorn.toml --access-log - --error-log -
+CMD alembic upgrade head && hypercorn app/main.py:app -c Hypercorn.toml --access-log - --error-log -
