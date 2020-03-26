@@ -3,8 +3,6 @@ FROM python:3.7-slim
 WORKDIR /home/code
 RUN apt-get update && apt-get upgrade -y && apt-get install -y gcc libmariadbclient-dev
 
-RUN mkdir files
-
 COPY ./requirements.txt ./
 RUN pip install -r ./requirements.txt
 
