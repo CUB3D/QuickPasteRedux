@@ -14,9 +14,20 @@
       {% include 'tmp_user_header.html' %}
     </header>
 
-  <h1>Your notes</h1>
-  {% for note in notes %}
-    <a href="/edit/{{note.note_id}}"><p>{{ note.note_id }}</p></a>
-  {% endfor %}
+    <div class="container">
+      <h2>Your notes</h2>
+      <div class="container">
+        <div class="columns">
+          {% for note in notes %}
+            <div class="column col-3 card bg-dark">
+              <div class="card-header">
+                <a class="card-title" href="/edit/{{note.note_id}}"><h4>{{ note.note_id }}</h4></a>
+              </div>
+              <div class="card-body"></div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
   </body>
 </html>
