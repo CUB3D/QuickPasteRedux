@@ -82,7 +82,7 @@ async def edit(req):
 
     # Make sure the user can edit this file
     security_key_valid = db_note.security_key == req.cookies.get(f"{db_note.note_id}_securityKey")
-    owner_valid = claims and db_note.owner != claims["userId"])
+    owner_valid = claims and db_note.owner != claims["userId"]
     if not security_key_valid and not owner_valid:
         return RedirectResponse(f"/view/{db_note.note_id}")
 
