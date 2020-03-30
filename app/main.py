@@ -91,20 +91,10 @@ async def root(req):
                 "owner": -1 if claims is None else claims["userId"]
             })
 
-            db_note = await database.fetch_one(note.select().where(note.c.note_id == location))
-
-            file_path = os.path.join("files", db_note.file_name)
-
-            if os.path.exists(file_path):
-                with open(file_path) as f:
-                    content = f.read()
-            else:
-                content = ""
-
             resp = templates.TemplateResponse("edit.html", {
                 "request": req,
-                "noteID": db_note.note_id,
-                "content": content,
+                "noteID": location,
+                "content": "",
                 "user": claims
             })
             resp.set_cookie(f"{location}_securityKey", security_key)
