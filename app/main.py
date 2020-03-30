@@ -3,6 +3,8 @@ from starlette.responses import JSONResponse, RedirectResponse, PlainTextRespons
 from starlette.config import Config
 from starlette.templating import Jinja2Templates
 from starlette.staticfiles import StaticFiles
+from starlette.middleware import Middleware
+from starlette.middleware.gzip import GZipMiddleware
 import os
 import string
 import random
@@ -20,7 +22,11 @@ config = Config(".env")
 DEBUG = config("DEBUG", cast=bool, default=False)
 DATABASE_URL = config("DATABASE_URL")
 
-app = Starlette(debug=DEBUG)
+middleware = [
+    Middleware(GZipMiddleware, minimum_size=1000)
+]
+
+app = Starlette(debug=DEBUG, middleware=middleware)
 templates = Jinja2Templates("templates")
 app.mount('/static', StaticFiles(directory='static'))
 
