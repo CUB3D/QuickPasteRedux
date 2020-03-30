@@ -67,8 +67,43 @@ async def root(req):
         user_notes = await database.fetch_all(note.select().where(note.c.owner == claims["userId"]))
         return templates.TemplateResponse("main.html", {"request": req, "user": claims, "notes": user_notes})
     else:
-        # User not logged in so redirect to new note
-        return RedirectResponse(f"/newNote")
+        previous_notes = [x[0].split("_")[0] for x in filter(lambda x: "_securityKey" in x[0], req.cookies.items())]
+        previous_notes_old = [(await database.fetch_one(note.select().where(note.c.note_id == note_id))) for note_id in previous_notes]
+
+        if previous_notes_old:
+            return templates.TemplateResponse("main.html", {"request": req, "user": None, "notes": previous_notes_old})
+        else:
+            # User not logged in so redirect to new note
+            location = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
+
+            security_key = str(uuid.uuid4())
+
+            await database.execute(note.insert(), values={
+                "file_name": str(uuid.uuid4()),
+                "note_id": location,
+                "security_key": security_key,
+                "owner": -1 if claims is None else claims["userId"]
+            })
+
+            db_note = await database.fetch_one(note.select().where(note.c.note_id == location))
+
+            file_path = os.path.join("files", db_note.file_name)
+
+            if os.path.exists(file_path):
+                with open(file_path) as f:
+                    content = f.read()
+            else:
+                content = ""
+
+            resp = templates.TemplateResponse("edit.html", {
+                "request": req,
+                "noteID": db_note.note_id,
+                "content": content,
+                "user": claims
+            })
+            resp.set_cookie(f"{location}_securityKey", security_key)
+
+            return resp
 
 
 @app.route("/edit/{note}")

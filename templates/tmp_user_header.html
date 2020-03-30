@@ -4,7 +4,7 @@
   {% else %}
     <label class="mr-1">{{ user['username'] }}</label>
     <figure class="avatar mr-2" data-initial="{{ user['username'][0].upper() }}" style="background-color: #5755d9;">
-      <!--<img src="img/avatar-1.png" alt="...">-->
     </figure>
+    <button class="btn btn-primary" onclick="logout()">Logout</button>
   {% endif %}
 </section>
