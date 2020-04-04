@@ -20,6 +20,7 @@
           QuickPaste
         </a>
         <button id="btn-share" class="btn btn-primary"><img alt="Share icon" src="/static/icon/share.svg" class="navbar-icon"></button>
+        <button id="btn-public" class="btn btn-primary">Make public</button>
       </section>
         <section class="navbar-section navbar-center">
           <label class="bg-dark">/note/{{ noteID }}</label>
@@ -28,13 +29,6 @@
       {% include 'tmp_user_header.html' %}
     </div>
     <div id="body-container" class="bg-dark">
-{#      <div id="numbers-pane" class="bg-dark">#}
-{#        <ul id="numbers-list" class="bg-dark">#}
-{#          {% for i in range(content.split("\n")|length) %}#}
-{#            <li>{{i+1}}</li>#}
-{#          {% endfor %}#}
-{#        </ul>#}
-{#      </div>#}
       <textarea id="editor-pane" class="bg-dark" spellcheck="false">{{content}}</textarea>
     </div>
     <div id="msg-overlay" class="toast toast-success fadeout"></div>

@@ -14,7 +14,7 @@ from urllib.parse import unquote
 from pygments import highlight
 from pygments.lexers import guess_lexer
 from pygments.formatters import HtmlFormatter
-from sqlalchemy import Table, Column, Integer, String
+from sqlalchemy import Table, Column, Integer, String, Boolean
 import sqlalchemy
 from authlib.jose import jwt
 
@@ -42,7 +42,8 @@ note = Table(
     Column("file_name", String(length=255)),
     Column("note_id", String(length=255)),
     Column("security_key", String(length=255)),
-    Column("owner", Integer)
+    Column("owner", Integer),
+    Column("public", Boolean)
 )
 
 
@@ -69,15 +70,19 @@ def get_request_claims(req):
 @app.route("/")
 async def root(req):
     claims = get_request_claims(req)
+
+    #TODO: .order_by()
+    public_notes = await database.fetch_all(note.select().where(note.c.public == True).limit(10))
+
     if claims:
         user_notes = await database.fetch_all(note.select().where(note.c.owner == claims["userId"]))
-        return templates.TemplateResponse("main.html", {"request": req, "user": claims, "notes": user_notes})
+        return templates.TemplateResponse("main.html", {"request": req, "user": claims, "notes": user_notes, "public_notes": public_notes})
     else:
         previous_notes = [x[0].split("_")[0] for x in filter(lambda x: "_securityKey" in x[0], req.cookies.items())]
         previous_notes_old = [(await database.fetch_one(note.select().where(note.c.note_id == note_id))) for note_id in previous_notes]
 
         if previous_notes_old:
-            return templates.TemplateResponse("main.html", {"request": req, "user": None, "notes": previous_notes_old})
+            return templates.TemplateResponse("main.html", {"request": req, "user": None, "notes": previous_notes_old, "public_notes": public_notes})
         else:
             # User not logged in so redirect to new note
             location = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
@@ -245,3 +250,9 @@ async def save_note(req):
     return JSONResponse({
         "Status": 1
     })
+
+
+@app.route("/note/{id}/set-public")
+async def set_note_public(req):
+    await database.execute(note.update().where(note.c.note_id == req.path_params["id"]).values(public=True))
+    return PlainTextResponse("Ok")

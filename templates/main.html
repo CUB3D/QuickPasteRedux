@@ -31,7 +31,19 @@
                 <img style="display: block" height="75em" src="/static/icon/plus-circle.svg" alt="New"/>
               </a>
           </div>
-
+        </div>
+      </div>
+      <h2>Public Notes</h2>
+      <div class="container">
+        <div class="columns d-flex" style="flex-wrap: wrap">
+          {% for note in public_notes %}
+            <div class="column card bg-dark mr-2 mb-2" style="max-width: 10em">
+              <div class="card-header">
+                <a class="card-title" href="/edit/{{note.note_id}}"><h4>{{ note.note_id }}</h4></a>
+              </div>
+              <div class="card-body"></div>
+            </div>
+          {% endfor %}
         </div>
       </div>
     </div>
