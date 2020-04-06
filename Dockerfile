@@ -13,4 +13,4 @@ COPY ./templates ./templates
 COPY ./static ./static
 COPY ./app ./app
 
-CMD alembic upgrade head && hypercorn app/main.py:app -c Hypercorn.toml --access-log - --error-log -
+CMD alembic upgrade head && hypercorn app.main:app -c Hypercorn.toml --access-log - --error-log -
