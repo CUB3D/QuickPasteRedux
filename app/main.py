@@ -134,14 +134,16 @@ async def view(req):
     })
 
     content_raw = await storageBackend.get(db_note.file_name)
-
     content = highlight(content_raw, guess_lexer(content_raw), HtmlFormatter())
+
+    view_count = await database.fetch_one(view_table.select().where(view_table.c.note_id == db_note.id).alias("tmp").count())
 
     return templates.TemplateResponse("view.html", {
         "request": req,
         "content": content,
         "contentRaw": content_raw,
         "noteID": db_note.note_id,
+        "view_count": view_count[0],
         "user": await authenticator.get_auth_claims(req)
     })
 
@@ -236,3 +238,27 @@ async def set_note_public(req):
     await database.execute(note.update().where(note.c.note_id == req.path_params["id"]).values(public=True))
 
     return Response(status_code=200)
+
+
+@app.route("/clone/{note}", methods=["POST"])
+async def save_note(req):
+    claims = await authenticator.get_auth_claims(req)
+
+    location = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
+    security_key = str(uuid.uuid4())
+    file_name = str(uuid.uuid4())
+
+    await database.execute(note.insert(), values={
+        "file_name": file_name,
+        "note_id": location,
+        "security_key": security_key,
+        "owner": -1 if claims is None else claims["userId"]
+    })
+
+    original_note = await database.fetch_one(note.select().where(note.c.note_id == req.path_params["note"]))
+    original_content = await storageBackend.get(original_note.file_name)
+    await storageBackend.set(file_name, original_content)
+
+    resp = PlainTextResponse(location)
+    resp.set_cookie(f"{location}_securityKey", security_key)
+    return resp
