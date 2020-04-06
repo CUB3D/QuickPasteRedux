@@ -14,9 +14,10 @@ from urllib.parse import unquote
 from pygments import highlight
 from pygments.lexers import guess_lexer
 from pygments.formatters import HtmlFormatter
-from sqlalchemy import Table, Column, Integer, String, Boolean
+from sqlalchemy import Table, Column, Integer, String, Boolean, ForeignKey, DateTime
 import sqlalchemy
 from authlib.jose import jwt
+from hashlib import md5
 
 config = Config(".env")
 DEBUG = config("DEBUG", cast=bool, default=False)
@@ -44,6 +45,15 @@ note = Table(
     Column("security_key", String(length=255)),
     Column("owner", Integer),
     Column("public", Boolean)
+)
+
+view_table = Table(
+    "views",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("note_id", Integer, ForeignKey("notes.id")),
+    Column("visitor_id", String(length=64)),
+    Column("created", DateTime())
 )
 
 
@@ -74,15 +84,17 @@ async def root(req):
     #TODO: .order_by()
     public_notes = await database.fetch_all(note.select().where(note.c.public == True).limit(10))
 
+    public_and_views = [(pub_note, (await database.fetch_one(view_table.select().where(view_table.c.note_id == pub_note.id).alias("tmp").count()))[0]) for pub_note in public_notes]
+
     if claims:
         user_notes = await database.fetch_all(note.select().where(note.c.owner == claims["userId"]))
-        return templates.TemplateResponse("main.html", {"request": req, "user": claims, "notes": user_notes, "public_notes": public_notes})
+        return templates.TemplateResponse("main.html", {"request": req, "user": claims, "notes": user_notes, "public_notes": public_and_views})
     else:
         previous_notes = [x[0].split("_")[0] for x in filter(lambda x: "_securityKey" in x[0], req.cookies.items())]
         previous_notes_old = [(await database.fetch_one(note.select().where(note.c.note_id == note_id))) for note_id in previous_notes]
 
         if previous_notes_old:
-            return templates.TemplateResponse("main.html", {"request": req, "user": None, "notes": previous_notes_old, "public_notes": public_notes})
+            return templates.TemplateResponse("main.html", {"request": req, "user": None, "notes": previous_notes_old, "public_notes": public_and_views})
         else:
             # User not logged in so redirect to new note
             location = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
@@ -140,10 +152,24 @@ async def edit(req):
 
 @app.route("/view/{note}")
 async def view(req):
+
+    ip = req.client.host
+    try:
+        ip = req.headers['HTTP_X_FORWARDED_FOR']
+    except KeyError as e:
+        print("Not behind a proxy")
+    ip_hashed = md5(ip.encode("UTF-8")).hexdigest()
+    print(ip_hashed)
+
     db_note = await database.fetch_one(note.select().where(note.c.note_id == req.path_params["note"]))
 
     if db_note is None:
         return RedirectResponse("/")
+
+    await database.execute(view_table.insert(), values={
+        "note_id": db_note.id,
+        "visitor_id": ip_hashed,
+    })
 
     file_name = os.path.join("files", db_note.file_name)
 
