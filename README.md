@@ -1,5 +1,5 @@
 # QuickPasteRedux
-### A simple pastebin clone in python and [starlette](https://starlette.io)
+### A simple pastebin clone in python and [starlette](https://www.starlette.io)
 
 ![Licence](https://img.shields.io/github/license/CUB3D/QuickPasteRedux)
 
