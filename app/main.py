@@ -13,12 +13,11 @@ from urllib.parse import unquote
 from pygments import highlight
 from pygments.lexers import guess_lexer
 from pygments.formatters import HtmlFormatter
-from sqlalchemy import Table, Column, Integer, String, Boolean, ForeignKey, DateTime
-import sqlalchemy
-from authlib.jose import jwt
 from hashlib import md5
 
+from app.authentication.Authenticator import UKAuthAuthenticator, BulkAuthenticator, CookieAuthenticator
 from app.storage.NoteStorage import LocalNoteStorage
+from app.models.Models import note, view as view_table, metadata
 
 config = Config(".env")
 DEBUG = config("DEBUG", cast=bool, default=False)
@@ -35,29 +34,8 @@ app.mount('/static', StaticFiles(directory='static'))
 
 database = Database(DATABASE_URL)
 
-metadata = sqlalchemy.MetaData()
-
-note = Table(
-    "notes",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("file_name", String(length=255)),
-    Column("note_id", String(length=255)),
-    Column("security_key", String(length=255)),
-    Column("owner", Integer),
-    Column("public", Boolean)
-)
-
-view_table = Table(
-    "views",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("note_id", Integer, ForeignKey("notes.id")),
-    Column("visitor_id", String(length=64)),
-    Column("created", DateTime())
-)
-
 storageBackend = LocalNoteStorage()
+authenticator = BulkAuthenticator([UKAuthAuthenticator(), CookieAuthenticator()])
 
 
 @app.on_event("startup")
@@ -70,19 +48,9 @@ async def shutdown():
     await database.disconnect()
 
 
-def get_request_claims(req):
-    auth_cookie = req.cookies.get('UK_APP_AUTH')
-    if auth_cookie is not None:
-        with open("./public.pem") as kf:
-            public_key = kf.read()
-        return jwt.decode(auth_cookie, public_key)
-    else:
-        return None
-
-
 @app.route("/")
 async def root(req):
-    claims = get_request_claims(req)
+    claims = await authenticator.get_auth_claims(req)
 
     #TODO: .order_by()
     public_notes = await database.fetch_all(note.select().where(note.c.public == True).limit(10))
@@ -124,17 +92,14 @@ async def root(req):
 
 @app.route("/edit/{note}")
 async def edit(req):
-    claims = get_request_claims(req)
+    claims = await authenticator.get_auth_claims(req)
 
     db_note = await database.fetch_one(note.select().where(note.c.note_id == req.path_params["note"]))
 
     if db_note is None:
         return RedirectResponse("/")
 
-    # Make sure the user can edit this file
-    security_key_valid = db_note.security_key == req.cookies.get(f"{db_note.note_id}_securityKey")
-    owner_valid = claims and db_note.owner != claims["userId"]
-    if not security_key_valid and not owner_valid:
+    if not await authenticator.can_access_resource(req, db_note):
         return RedirectResponse(f"/view/{db_note.note_id}")
 
     content = await storageBackend.get(db_note.file_name)
@@ -177,7 +142,7 @@ async def view(req):
         "content": content,
         "contentRaw": content_raw,
         "noteID": db_note.note_id,
-        "user": get_request_claims(req)
+        "user": await authenticator.get_auth_claims(req)
     })
 
 
@@ -200,10 +165,9 @@ async def view_raw(req):
 async def view_oembed(req):
     noteID = req.path_params["note"]
 
-    q = note.select().where(note.c.note_id == noteID)
-    id, filePath, name, securityKey = await database.fetch_one(q)
+    db_note = await database.fetch_one(note.select().where(note.c.note_id == noteID))
 
-    content = await storageBackend.get(filePath)
+    content = await storageBackend.get(db_note.file_name)
 
     content = highlight(content, guess_lexer(content), HtmlFormatter())
 
@@ -224,7 +188,7 @@ async def style(req):
 
 @app.route("/newNote")
 async def new_note(req):
-    claims = get_request_claims(req)
+    claims = await authenticator.get_auth_claims(req)
 
     location = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
     security_key = str(uuid.uuid4())
@@ -252,7 +216,7 @@ async def save_note(req):
 
     db_note = await database.fetch_one(note.select().where(note.c.note_id == req.path_params["note"]))
 
-    if db_note.security_key != req.cookies.get(f"{db_note.note_id}_securityKey"):
+    if not await authenticator.can_access_resource(req, db_note):
         return Response(status_code=403)
 
     await storageBackend.set(db_note.file_name, unquote(json_data["content"]))
@@ -264,5 +228,11 @@ async def save_note(req):
 
 @app.route("/note/{id}/set-public")
 async def set_note_public(req):
+    db_note = await database.fetch_one(note.select().where(note.c.note_id == req.path_params["id"]))
+
+    if not await authenticator.can_access_resource(req, db_note):
+        return Response(status_code=403)
+
     await database.execute(note.update().where(note.c.note_id == req.path_params["id"]).values(public=True))
-    return PlainTextResponse("Ok")
+
+    return Response(status_code=200)
