@@ -3,6 +3,8 @@ FROM python:3.7-slim
 WORKDIR /home/code
 RUN apt-get update && apt-get upgrade -y && apt-get install -y build-essential libffi-dev libssl-dev libmariadbclient-dev
 
+RUN wget https://cdn.cub3d.pw/auth/public.pem
+
 COPY ./requirements.txt ./
 RUN pip install -r ./requirements.txt
 
