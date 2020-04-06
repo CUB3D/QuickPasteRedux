@@ -5,7 +5,6 @@ from starlette.templating import Jinja2Templates
 from starlette.staticfiles import StaticFiles
 from starlette.middleware import Middleware
 from starlette.middleware.gzip import GZipMiddleware
-import os
 import string
 import random
 import uuid
@@ -18,6 +17,8 @@ from sqlalchemy import Table, Column, Integer, String, Boolean, ForeignKey, Date
 import sqlalchemy
 from authlib.jose import jwt
 from hashlib import md5
+
+from app.storage.NoteStorage import LocalNoteStorage
 
 config = Config(".env")
 DEBUG = config("DEBUG", cast=bool, default=False)
@@ -55,6 +56,8 @@ view_table = Table(
     Column("visitor_id", String(length=64)),
     Column("created", DateTime())
 )
+
+storageBackend = LocalNoteStorage()
 
 
 @app.on_event("startup")
@@ -134,13 +137,7 @@ async def edit(req):
     if not security_key_valid and not owner_valid:
         return RedirectResponse(f"/view/{db_note.note_id}")
 
-    file_path = os.path.join("files", db_note.file_name)
-
-    if os.path.exists(file_path):
-        with open(file_path) as f:
-            content = f.read()
-    else:
-        content = ""
+    content = await storageBackend.get(db_note.file_name)
 
     return templates.TemplateResponse("edit.html", {
         "request": req,
@@ -171,13 +168,7 @@ async def view(req):
         "visitor_id": ip_hashed,
     })
 
-    file_name = os.path.join("files", db_note.file_name)
-
-    if os.path.exists(file_name):
-        with open(file_name) as f:
-            content_raw = f.read()
-    else:
-        return RedirectResponse("/")
+    content_raw = await storageBackend.get(db_note.file_name)
 
     content = highlight(content_raw, guess_lexer(content_raw), HtmlFormatter())
 
@@ -197,12 +188,9 @@ async def view_raw(req):
     if db_note is None:
         return RedirectResponse("/")
 
-    file_path = os.path.join("files", db_note.file_name)
+    content = await storageBackend.get(db_note.file_name)
 
-    if os.path.exists(file_path):
-        with open(file_path) as f:
-            content = f.read()
-    else:
+    if not content:
         return RedirectResponse("/")
 
     return PlainTextResponse(content, media_type="text/plain")
@@ -215,13 +203,7 @@ async def view_oembed(req):
     q = note.select().where(note.c.note_id == noteID)
     id, filePath, name, securityKey = await database.fetch_one(q)
 
-    filePath = os.path.join("files", filePath)
-
-    if os.path.exists(filePath):
-        with open(filePath) as f:
-            content = f.read()
-    else:
-        return RedirectResponse("/")
+    content = await storageBackend.get(filePath)
 
     content = highlight(content, guess_lexer(content), HtmlFormatter())
 
@@ -246,13 +228,16 @@ async def new_note(req):
 
     location = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
     security_key = str(uuid.uuid4())
+    file_name = str(uuid.uuid4())
 
     await database.execute(note.insert(), values={
-        "file_name": str(uuid.uuid4()),
+        "file_name": file_name,
         "note_id": location,
         "security_key": security_key,
         "owner": -1 if claims is None else claims["userId"]
     })
+
+    await storageBackend.set(file_name, "")
 
     resp = RedirectResponse(f"/edit/{location}")
     resp.set_cookie(f"{location}_securityKey", security_key)
@@ -270,8 +255,7 @@ async def save_note(req):
     if db_note.security_key != req.cookies.get(f"{db_note.note_id}_securityKey"):
         return Response(status_code=403)
 
-    with open(os.path.join("files", db_note.file_name), "w") as f:
-        f.write(unquote(json_data["content"]))
+    await storageBackend.set(db_note.file_name, unquote(json_data["content"]))
 
     return JSONResponse({
         "Status": 1
