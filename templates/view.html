@@ -12,7 +12,7 @@
 
   <meta property="og:url" content="https://qp.cub3d.pw/view/{{noteID}}">
   <meta property="og:title" content="QuickPaste - {{noteID}}">
-  <meta property="og:description" content="{{content}}">
+  <meta property="og:description" content="{{contentRaw}}">
   <meta property="og:site_name" content="QuickPaste">
 
   <meta name="twitter:card" content="summary">
@@ -27,9 +27,11 @@
       </a>
       <button id="btn-copy" class="btn btn-primary"><img alt="Share icon" src="/static/icon/clipboard.svg" class="navbar-icon"></button>
       <a href="/view/{{noteID}}/raw" class="btn btn-primary" download="QP-{{noteID}}.txt"><img alt="Share icon" src="/static/icon/download.svg" class="navbar-icon"></a>
+      <button id="btn-clone" class="btn btn-primary"><img alt="Clone icon" src="/static/icon/copy.svg" class="navbar-icon"></button>
     </section>
       <section class="navbar-section navbar-center">
         <label class="bg-dark">/note/{{ noteID }}</label>
+        <span class="ml-2"><img class="mr-1" src="/static/icon/eye.svg"/>{{ view_count }}</span>
       </section>
     {% include 'tmp_user_header.html' %}
   </div>

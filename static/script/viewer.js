@@ -1,4 +1,4 @@
-document.getElementById("btn-copy").onclick = function(e) {
+document.getElementById("btn-copy").onclick = (e) => {
     let alert = document.getElementById("msg-overlay");
     let content = document.getElementById("editor-pane").innerText.trim();
     navigator.clipboard.writeText(content).then(function () {
@@ -11,6 +11,19 @@ document.getElementById("btn-copy").onclick = function(e) {
         }, 1000);
         alert.innerText = "Note copied";
     });
+};
+
+document.getElementById("btn-clone").onclick = (e) => {
+    let r = new XMLHttpRequest();
+    r.onload = () => {
+        document.location.href = "/edit/" + r.responseText;
+    };
+
+    const urlParts = window.location.href.split("/");
+    const noteID = urlParts[urlParts.length-1];
+
+    r.open("POST", "/clone/" + noteID, true);
+    r.send();
 };
 
 ukauth.init({

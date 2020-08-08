@@ -23,7 +23,15 @@
               <div class="card-header">
                 <a class="card-title" href="/edit/{{note.note_id}}"><h4>{{ note.note_id }}</h4></a>
               </div>
-              <div class="card-body"></div>
+              <div class="card-body">
+{#                <p>"{{ note }}"</p>#}
+
+                {% if note.public %}
+                  <img src="/static/icon/unlock.svg"/>
+                {% else %}
+                  <img src="/static/icon/lock.svg"/>
+                {% endif %}
+              </div>
             </div>
           {% endfor %}
           <div class="column card bg-dark mr-2 mb-2 d-flex" style="max-width: 10em; justify-content: center">
@@ -39,9 +47,11 @@
           {% for note in public_notes %}
             <div class="column card bg-dark mr-2 mb-2" style="max-width: 10em">
               <div class="card-header">
-                <a class="card-title" href="/edit/{{note.note_id}}"><h4>{{ note.note_id }}</h4></a>
+                <a class="card-title" href="/view/{{note[0].note_id}}"><h4>{{ note[0].note_id }}</h4></a>
               </div>
-              <div class="card-body"></div>
+              <div class="card-body">
+                <span><img src="/static/icon/eye.svg"/>{{ note[1] }}</span>
+              </div>
             </div>
           {% endfor %}
         </div>
