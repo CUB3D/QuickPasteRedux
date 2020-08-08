@@ -1,4 +1,4 @@
-FROM python:3.7-slim
+FROM python:3.8-slim
 
 WORKDIR /home/code
 RUN apt-get update && apt-get upgrade -y && apt-get install -y build-essential libffi-dev libssl-dev libmariadbclient-dev
