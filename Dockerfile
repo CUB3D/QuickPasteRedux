@@ -1,7 +1,7 @@
 FROM python:3.9-slim
 
 WORKDIR /home/code
-RUN apt-get update && apt-get upgrade -y && apt-get install -y wget build-essential libffi-dev libssl-dev libmariadbclient-dev
+RUN apt-get update && apt-get upgrade -y && apt-get install -y wget build-essential libffi-dev libssl-dev libmariadb-dev
 
 RUN wget https://cdn.cub3d.pw/auth/public.pem
 
