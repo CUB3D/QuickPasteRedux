@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-starlette = "0.14.2"
+starlette = "0.25.0"
 aiofiles = "0.6.0"
 databases = {extras = ["mysql"], version = "0.4.3"}
 aiomysql = "0.0.21"
